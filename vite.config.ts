@@ -10,7 +10,10 @@ export default defineConfig({
       name: 'bundle',
     },
     rollupOptions: {
-      external: [...Object.keys(packageJson.peerDependencies)],
+      external: [
+        ...Object.keys(packageJson.dependencies),
+        ...Object.keys(packageJson.peerDependencies),
+      ],
     },
   },
   plugins: [reactRefresh()],
