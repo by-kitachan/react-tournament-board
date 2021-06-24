@@ -1,9 +1,56 @@
 import md5 from 'md5';
-import React, { useMemo } from 'react';
+import React from 'react';
 import { Direction, MatchingStructureNode } from '../../types';
 import { TournamentBoardProps } from '../TournamentBoard';
-import { SVGLayer, GroupLayer } from './layer';
+import { GroupLayer } from './layer';
 import { Link } from './line';
+
+export type NodeStatus = {
+  id: string;
+  height: number;
+  groupNum: number;
+  leafNum: number;
+  leafIds: string[];
+  treeWeight: number;
+  children?: NodeStatus[];
+};
+
+export const traverseTreeNodeStatus = (
+  node: MatchingStructureNode,
+): NodeStatus => {
+  if (!Array.isArray(node)) {
+    return {
+      id: md5(node.id),
+      height: 0,
+      groupNum: 0,
+      leafNum: 1,
+      leafIds: [node.id],
+      treeWeight: 0.5,
+    };
+  }
+  const children = node.map(traverseTreeNodeStatus);
+  const totalLeafNum = children.reduce((sum, n) => sum + n.leafNum, 0);
+  let treeWeight = 0;
+  if (children.length >= 2) {
+    for (let i = 0; i < children.length; i++) {
+      treeWeight +=
+        (children[i].leafNum / totalLeafNum) * (i / (children.length - 1));
+    }
+  } else {
+    treeWeight = 0.5;
+  }
+  const height = Math.max(...children.map((n) => n.height)) + 1;
+  return {
+    id: children.reduce((id, n) => md5(`${id}${n.id}`), ''),
+    height,
+    groupNum:
+      children.reduce((sum, n) => sum + n.groupNum, 0) + (height === 1 ? 1 : 0),
+    leafNum: totalLeafNum,
+    leafIds: children.reduce<string[]>((arr, n) => [...arr, ...n.leafIds], []),
+    treeWeight,
+    children,
+  };
+};
 
 const TreeNode: React.VFC<{
   leavesPos: number[];
@@ -44,70 +91,32 @@ const TreeNode: React.VFC<{
   );
 };
 
-export const SubTree: React.VFC<TournamentBoardProps> = ({
-  competitor,
-  direction = 'vertical',
-  boardSize = 500,
-  descenderLinkLengthRatio = 0.7,
-  ascenderLinkLengthRatio = 0.3,
-  leafDistance = 30,
-  groupDistance = 15,
+export const SubTree: React.VFC<
+  {
+    treeNodeStatus: NodeStatus;
+    treeSize: number;
+  } & Required<
+    Pick<
+      TournamentBoardProps,
+      | 'direction'
+      | 'descenderLinkLengthRatio'
+      | 'ascenderLinkLengthRatio'
+      | 'leafDistance'
+      | 'groupDistance'
+    >
+  >
+> = ({
+  treeNodeStatus,
+  treeSize,
+  direction,
+  descenderLinkLengthRatio,
+  ascenderLinkLengthRatio,
+  leafDistance,
+  groupDistance,
 }) => {
-  type NodeStatus = {
-    id: string;
-    height: number;
-    groupNum: number;
-    leafNum: number;
-    leafIds: string[];
-    treeWeight: number;
-    children?: NodeStatus[];
-  };
-  const treeNodeStatus = useMemo(() => {
-    const traverse = (node: MatchingStructureNode): NodeStatus => {
-      if (!Array.isArray(node)) {
-        return {
-          id: md5(node.id),
-          height: 0,
-          groupNum: 0,
-          leafNum: 1,
-          leafIds: [node.id],
-          treeWeight: 0.5,
-        };
-      }
-      const children = node.map(traverse);
-      const totalLeafNum = children.reduce((sum, n) => sum + n.leafNum, 0);
-      let treeWeight = 0;
-      if (children.length >= 2) {
-        for (let i = 0; i < children.length; i++) {
-          treeWeight +=
-            (children[i].leafNum / totalLeafNum) * (i / (children.length - 1));
-        }
-      } else {
-        treeWeight = 0.5;
-      }
-      const height = Math.max(...children.map((n) => n.height)) + 1;
-      return {
-        id: children.reduce((id, n) => md5(`${id}${n.id}`), ''),
-        height,
-        groupNum:
-          children.reduce((sum, n) => sum + n.groupNum, 0) +
-          (height === 1 ? 1 : 0),
-        leafNum: totalLeafNum,
-        leafIds: children.reduce<string[]>(
-          (arr, n) => [...arr, ...n.leafIds],
-          [],
-        ),
-        treeWeight,
-        children,
-      };
-    };
-    return traverse(competitor);
-  }, [competitor]);
-
-  const linkLength = boardSize / treeNodeStatus.height;
+  const linkLength = treeSize / treeNodeStatus.height;
   const descenderLinkLength = linkLength * descenderLinkLengthRatio;
   const ascenderLinkLength = linkLength * ascenderLinkLengthRatio;
-  const rootHeight = treeNodeStatus.height;
   const TreeGroups: React.VFC<
     { nodeStatus: NodeStatus } & React.SVGProps<SVGGElement>
   > = ({ nodeStatus: { height, children }, ...other }) => {
@@ -158,8 +167,8 @@ export const SubTree: React.VFC<TournamentBoardProps> = ({
         <GroupLayer
           transform={
             direction === 'vertical'
-              ? `translate(${linkLength * height} 0)`
-              : `translate(0 ${linkLength * (rootHeight - height)})`
+              ? `translate(${linkLength * (height - 1)} 0)`
+              : `translate(0 ${linkLength * (treeNodeStatus.height - height)})`
           }
         >
           <TreeNode
@@ -175,26 +184,14 @@ export const SubTree: React.VFC<TournamentBoardProps> = ({
       </GroupLayer>
     );
   };
-
-  const totalCompetitorPlacingSize =
-    treeNodeStatus.leafNum * leafDistance +
-    treeNodeStatus.groupNum * groupDistance;
-  const svgSize =
-    direction === 'vertical'
-      ? { width: boardSize, height: totalCompetitorPlacingSize }
-      : { width: totalCompetitorPlacingSize, height: boardSize };
   return (
-    <SVGLayer {...svgSize}>
-      <GroupLayer stroke="white" strokeWidth={2} fill="transparent">
-        <TreeGroups
-          transform={
-            direction === 'vertical'
-              ? `translate(0 ${groupDistance / 2})`
-              : `translate(${groupDistance / 2} 0)`
-          }
-          nodeStatus={treeNodeStatus}
-        />
-      </GroupLayer>
-    </SVGLayer>
+    <TreeGroups
+      transform={
+        direction === 'vertical'
+          ? `translate(0 ${groupDistance / 2})`
+          : `translate(${groupDistance / 2} 0)`
+      }
+      nodeStatus={treeNodeStatus}
+    />
   );
 };
