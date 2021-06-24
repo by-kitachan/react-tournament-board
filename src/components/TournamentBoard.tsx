@@ -49,6 +49,7 @@ export const TournamentBoard: React.VFC<TournamentBoardProps> = ({
   type NodeStatus = {
     id: string;
     height: number;
+    groupNum: number;
     leafNum: number;
     leafIds: string[];
     treeWeight: number;
@@ -60,6 +61,7 @@ export const TournamentBoard: React.VFC<TournamentBoardProps> = ({
         return {
           id: md5(node.id),
           height: 0,
+          groupNum: 0,
           leafNum: 1,
           leafIds: [node.id],
           treeWeight: 0.5,
@@ -76,9 +78,13 @@ export const TournamentBoard: React.VFC<TournamentBoardProps> = ({
       } else {
         treeWeight = 0.5;
       }
+      const height = Math.max(...children.map((n) => n.height)) + 1;
       return {
         id: children.reduce((id, n) => md5(`${id}${n.id}`), ''),
-        height: Math.max(...children.map((n) => n.height)) + 1,
+        height,
+        groupNum:
+          children.reduce((sum, n) => sum + n.groupNum, 0) +
+          (height === 1 ? 1 : 0),
         leafNum: totalLeafNum,
         leafIds: children.reduce<string[]>(
           (arr, n) => [...arr, ...n.leafIds],
@@ -95,6 +101,7 @@ export const TournamentBoard: React.VFC<TournamentBoardProps> = ({
   const leafLinkLength = linkLength * 0.7;
   const rootLinkLength = linkLength * 0.3;
   const leafDistance = 30;
+  const groupDistance = 15;
   const rootHeight = treeNodeStatus.height;
   const TreeGroups: React.VFC<
     { nodeStatus: NodeStatus } & React.SVGProps<SVGGElement>
@@ -106,14 +113,26 @@ export const TournamentBoard: React.VFC<TournamentBoardProps> = ({
       (arr, n, i) => [...arr, n.leafNum + (i > 0 ? arr[i - 1] : 0)],
       [],
     );
+    const accGroupNum = children.reduce<number[]>(
+      (arr, n, i) => [...arr, n.groupNum + (i > 0 ? arr[i - 1] : 0)],
+      [],
+    );
     const leavesStartPos = children.reduce<number[]>(
-      (arr, n, i) => [...arr, (accLeafNum[i] - n.leafNum) * leafDistance],
+      (arr, n, i) => [
+        ...arr,
+        (accLeafNum[i] - n.leafNum) * leafDistance +
+          (accGroupNum[i] - n.groupNum) * groupDistance,
+      ],
       [],
     );
     const leavesPos = children.reduce<number[]>(
       (arr, n, i) => [
         ...arr,
-        (accLeafNum[i] - n.leafNum + n.treeWeight * n.leafNum) * leafDistance,
+        (accLeafNum[i] - n.leafNum + n.treeWeight * n.leafNum) * leafDistance +
+          (accGroupNum[i] -
+            n.groupNum +
+            Math.max(n.groupNum - 1, 0) * n.treeWeight) *
+            groupDistance,
       ],
       [],
     );
