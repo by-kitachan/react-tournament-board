@@ -1,18 +1,9 @@
 import md5 from 'md5';
 import React, { useMemo } from 'react';
-import { Direction, MatchingStructure, MatchingStructureNode } from '../types';
-import { SVGLayer, GroupLayer } from './chart/layer';
-import { Link } from './chart/line';
-
-export interface TournamentBoardProps {
-  competitor: MatchingStructure;
-  direction?: Direction;
-  boardSize?: number;
-  descenderLinkLengthRatio?: number;
-  ascenderLinkLengthRatio?: number;
-  leafDistance?: number;
-  groupDistance?: number;
-}
+import { Direction, MatchingStructureNode } from '../../types';
+import { TournamentBoardProps } from '../TournamentBoard';
+import { SVGLayer, GroupLayer } from './layer';
+import { Link } from './line';
 
 const TreeNode: React.VFC<{
   leavesPos: number[];
@@ -53,7 +44,7 @@ const TreeNode: React.VFC<{
   );
 };
 
-export const TournamentBoard: React.VFC<TournamentBoardProps> = ({
+export const SubTree: React.VFC<TournamentBoardProps> = ({
   competitor,
   direction = 'vertical',
   boardSize = 500,
@@ -193,19 +184,17 @@ export const TournamentBoard: React.VFC<TournamentBoardProps> = ({
       ? { width: boardSize, height: totalCompetitorPlacingSize }
       : { width: totalCompetitorPlacingSize, height: boardSize };
   return (
-    <div>
-      <SVGLayer {...svgSize}>
-        <GroupLayer stroke="white" strokeWidth={2} fill="transparent">
-          <TreeGroups
-            transform={
-              direction === 'vertical'
-                ? `translate(0 ${groupDistance / 2})`
-                : `translate(${groupDistance / 2} 0)`
-            }
-            nodeStatus={treeNodeStatus}
-          />
-        </GroupLayer>
-      </SVGLayer>
-    </div>
+    <SVGLayer {...svgSize}>
+      <GroupLayer stroke="white" strokeWidth={2} fill="transparent">
+        <TreeGroups
+          transform={
+            direction === 'vertical'
+              ? `translate(0 ${groupDistance / 2})`
+              : `translate(${groupDistance / 2} 0)`
+          }
+          nodeStatus={treeNodeStatus}
+        />
+      </GroupLayer>
+    </SVGLayer>
   );
 };
