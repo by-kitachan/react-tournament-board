@@ -7,15 +7,26 @@ import { Link } from './chart/line';
 export interface TournamentBoardProps {
   competitor: MatchingStructure;
   direction?: Direction;
+  boardSize?: number;
+  descenderLinkLengthRatio?: number;
+  ascenderLinkLengthRatio?: number;
+  leafDistance?: number;
+  groupDistance?: number;
 }
 
-const Tree: React.VFC<{
+const TreeNode: React.VFC<{
   leavesPos: number[];
   rootPos: number;
-  leafLinkLength: number;
-  rootLinkLength: number;
+  descenderLinkLength: number;
+  ascenderLinkLength: number;
   direction: Direction;
-}> = ({ leavesPos, rootPos, leafLinkLength, rootLinkLength, direction }) => {
+}> = ({
+  leavesPos,
+  rootPos,
+  descenderLinkLength,
+  ascenderLinkLength,
+  direction,
+}) => {
   return (
     <GroupLayer>
       {leavesPos.map((p, i) => (
@@ -25,14 +36,14 @@ const Tree: React.VFC<{
             direction === 'vertical'
               ? [
                   { x: 0, y: p },
-                  { x: leafLinkLength, y: p },
-                  { x: leafLinkLength, y: rootPos },
-                  { x: leafLinkLength + rootLinkLength, y: rootPos },
+                  { x: descenderLinkLength, y: p },
+                  { x: descenderLinkLength, y: rootPos },
+                  { x: descenderLinkLength + ascenderLinkLength, y: rootPos },
                 ]
               : [
-                  { x: p, y: leafLinkLength + rootLinkLength },
-                  { x: p, y: rootLinkLength },
-                  { x: rootPos, y: rootLinkLength },
+                  { x: p, y: descenderLinkLength + ascenderLinkLength },
+                  { x: p, y: ascenderLinkLength },
+                  { x: rootPos, y: ascenderLinkLength },
                   { x: rootPos, y: 0 },
                 ]
           }
@@ -45,6 +56,11 @@ const Tree: React.VFC<{
 export const TournamentBoard: React.VFC<TournamentBoardProps> = ({
   competitor,
   direction = 'vertical',
+  boardSize = 500,
+  descenderLinkLengthRatio = 0.7,
+  ascenderLinkLengthRatio = 0.3,
+  leafDistance = 30,
+  groupDistance = 15,
 }) => {
   type NodeStatus = {
     id: string;
@@ -97,11 +113,9 @@ export const TournamentBoard: React.VFC<TournamentBoardProps> = ({
     return traverse(competitor);
   }, [competitor]);
 
-  const linkLength = 100;
-  const leafLinkLength = linkLength * 0.7;
-  const rootLinkLength = linkLength * 0.3;
-  const leafDistance = 30;
-  const groupDistance = 15;
+  const linkLength = boardSize / treeNodeStatus.height;
+  const descenderLinkLength = linkLength * descenderLinkLengthRatio;
+  const ascenderLinkLength = linkLength * ascenderLinkLengthRatio;
   const rootHeight = treeNodeStatus.height;
   const TreeGroups: React.VFC<
     { nodeStatus: NodeStatus } & React.SVGProps<SVGGElement>
@@ -157,12 +171,12 @@ export const TournamentBoard: React.VFC<TournamentBoardProps> = ({
               : `translate(0 ${linkLength * (rootHeight - height)})`
           }
         >
-          <Tree
+          <TreeNode
             {...{
               leavesPos,
               rootPos,
-              leafLinkLength,
-              rootLinkLength,
+              descenderLinkLength,
+              ascenderLinkLength,
               direction,
             }}
           />
@@ -171,11 +185,25 @@ export const TournamentBoard: React.VFC<TournamentBoardProps> = ({
     );
   };
 
+  const totalCompetitorPlacingSize =
+    treeNodeStatus.leafNum * leafDistance +
+    treeNodeStatus.groupNum * groupDistance;
+  const svgSize =
+    direction === 'vertical'
+      ? { width: boardSize, height: totalCompetitorPlacingSize }
+      : { width: totalCompetitorPlacingSize, height: boardSize };
   return (
     <div>
-      <SVGLayer width={1000} height={1000}>
+      <SVGLayer {...svgSize}>
         <GroupLayer stroke="white" strokeWidth={2} fill="transparent">
-          <TreeGroups nodeStatus={treeNodeStatus} />
+          <TreeGroups
+            transform={
+              direction === 'vertical'
+                ? `translate(0 ${groupDistance / 2})`
+                : `translate(${groupDistance / 2} 0)`
+            }
+            nodeStatus={treeNodeStatus}
+          />
         </GroupLayer>
       </SVGLayer>
     </div>
