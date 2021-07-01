@@ -8,46 +8,47 @@ import { Link } from './line';
 export type NodeStatus = {
   id: string;
   height: number;
-  groupNum: number;
-  leafNum: number;
   leafIds: string[];
+  size: number;
   treeWeight: number;
   children?: NodeStatus[];
 };
 
-export const traverseTreeNodeStatus = (
-  node: MatchingStructureNode,
-): NodeStatus => {
+export const traverseTreeNodeStatus = ({
+  node,
+  leafDistance,
+  groupDistance,
+}: {
+  node: MatchingStructureNode;
+  leafDistance: number;
+  groupDistance: number;
+}): NodeStatus => {
   if (!Array.isArray(node)) {
     return {
       id: md5(node.id),
       height: 0,
-      groupNum: 0,
-      leafNum: 1,
       leafIds: [node.id],
+      size: leafDistance,
       treeWeight: 0.5,
     };
   }
-  const children = node.map(traverseTreeNodeStatus);
-  const totalLeafNum = children.reduce((sum, n) => sum + n.leafNum, 0);
-  let treeWeight = 0;
-  if (children.length >= 2) {
-    for (let i = 0; i < children.length; i++) {
-      treeWeight +=
-        (children[i].leafNum / totalLeafNum) * (i / (children.length - 1));
-    }
-  } else {
-    treeWeight = 0.5;
-  }
+  const children = node.map((node) =>
+    traverseTreeNodeStatus({ node, leafDistance, groupDistance }),
+  );
   const height = Math.max(...children.map((n) => n.height)) + 1;
+  const ss = children.map((n) => n.size);
+  const size = ss.reduce((sum, s) => sum + s, 0);
+  const rootLinkSize =
+    (size +
+      ss[0] * children[0].treeWeight -
+      ss[ss.length - 1] * (1 - children[ss.length - 1].treeWeight)) /
+    2;
   return {
     id: children.reduce((id, n) => md5(`${id}${n.id}`), ''),
     height,
-    groupNum:
-      children.reduce((sum, n) => sum + n.groupNum, 0) + (height === 1 ? 1 : 0),
-    leafNum: totalLeafNum,
     leafIds: children.reduce<string[]>((arr, n) => [...arr, ...n.leafIds], []),
-    treeWeight,
+    size: size + (height === 1 ? groupDistance : 0),
+    treeWeight: rootLinkSize / size,
     children,
   };
 };
@@ -119,38 +120,23 @@ export const SubTree: React.VFC<
   const ascenderLinkLength = linkLength * ascenderLinkLengthRatio;
   const TreeGroups: React.VFC<
     { nodeStatus: NodeStatus } & React.SVGProps<SVGGElement>
-  > = ({ nodeStatus: { height, children }, ...other }) => {
+  > = ({ nodeStatus: { height, children, size, treeWeight }, ...other }) => {
     if (!children) {
       return null;
     }
-    const accLeafNum = children.reduce<number[]>(
-      (arr, n, i) => [...arr, n.leafNum + (i > 0 ? arr[i - 1] : 0)],
+    const accSize = children.reduce<number[]>(
+      (arr, n, i) => [...arr, n.size + (i > 0 ? arr[i - 1] : 0)],
       [],
     );
-    const accGroupNum = children.reduce<number[]>(
-      (arr, n, i) => [...arr, n.groupNum + (i > 0 ? arr[i - 1] : 0)],
-      [],
-    );
-    const leavesStartPos = children.reduce<number[]>(
-      (arr, n, i) => [
-        ...arr,
-        (accLeafNum[i] - n.leafNum) * leafDistance +
-          (accGroupNum[i] - n.groupNum) * groupDistance,
-      ],
-      [],
-    );
+    const groupSizeOffset = height === 1 ? groupDistance / 2 : 0;
     const leavesPos = children.reduce<number[]>(
       (arr, n, i) => [
         ...arr,
-        (accLeafNum[i] - n.leafNum + n.treeWeight * n.leafNum) * leafDistance +
-          (accGroupNum[i] -
-            n.groupNum +
-            Math.max(n.groupNum - 1, 0) * n.treeWeight) *
-            groupDistance,
+        n.size * n.treeWeight + groupSizeOffset + (i > 0 ? accSize[i - 1] : 0),
       ],
       [],
     );
-    const rootPos = leavesPos.reduce((sum, n) => sum + n, 0) / leavesPos.length;
+    const rootPos = size * treeWeight;
     return (
       <GroupLayer {...other}>
         {children.map((n, i) => (
@@ -159,8 +145,8 @@ export const SubTree: React.VFC<
             nodeStatus={n}
             transform={
               direction === 'vertical'
-                ? `translate(0 ${leavesStartPos[i]})`
-                : `translate(${leavesStartPos[i]} 0)`
+                ? `translate(0 ${i > 0 ? accSize[i - 1] : 0})`
+                : `translate(${i > 0 ? accSize[i - 1] : 0} 0)`
             }
           />
         ))}
@@ -184,14 +170,5 @@ export const SubTree: React.VFC<
       </GroupLayer>
     );
   };
-  return (
-    <TreeGroups
-      transform={
-        direction === 'vertical'
-          ? `translate(0 ${groupDistance / 2})`
-          : `translate(${groupDistance / 2} 0)`
-      }
-      nodeStatus={treeNodeStatus}
-    />
-  );
+  return <TreeGroups nodeStatus={treeNodeStatus} />;
 };

@@ -8,19 +8,18 @@ function App() {
       <header className="App-header">
         <p>React tournament board</p>
         <TournamentBoard
-          direction="horizontal"
           competitor={[
             [
-              [{ id: 'a' }, { id: 'x' }],
-              [{ id: 'b' }, { id: 'c' }],
+              [[{ id: 'y' }, { id: 't' }, { id: 'u' }]],
+              [[{ id: 'a' }, { id: 'x' }], { id: 'y' }],
             ],
-            [[{ id: 'd' }]],
             [
-              [{ id: 'a' }, { id: 'x' }],
-              [{ id: 'b' }, { id: 'c' }],
-              [{ id: 'b' }, { id: 'c' }],
+              [[{ id: 'f' }, { id: 'p' }], { id: 'z' }],
+              [
+                [{ id: 'b' }, { id: 'c' }, { id: 'd' }, { id: 'e' }],
+                { id: 'o' },
+              ],
             ],
-            [[{ id: 'd' }, { id: 'e' }]],
           ]}
         />
       </header>
