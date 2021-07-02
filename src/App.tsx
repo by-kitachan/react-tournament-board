@@ -8,16 +8,23 @@ function App() {
       <header className="App-header">
         <p>React tournament board</p>
         <TournamentBoard
+          direction="horizontal"
+          bidirectionalTree
+          nodeRenderer={() => (
+            <div
+              style={{ backgroundColor: 'orange', width: 20, height: 20 }}
+            ></div>
+          )}
           competitor={[
             [
               [[{ id: 'y' }, { id: 't' }, { id: 'u' }]],
-              [[{ id: 'a' }, { id: 'x' }], { id: 'y' }],
+              [[{ id: 's' }], [{ id: 'a' }, { id: 'x' }]],
             ],
             [
-              [[{ id: 'f' }, { id: 'p' }], { id: 'z' }],
+              [[{ id: 'f' }, { id: 'p' }], [{ id: 'z' }]],
               [
                 [{ id: 'b' }, { id: 'c' }, { id: 'd' }, { id: 'e' }],
-                { id: 'o' },
+                [{ id: 'o' }, { id: 'q' }],
               ],
             ],
           ]}
