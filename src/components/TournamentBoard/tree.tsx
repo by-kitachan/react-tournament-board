@@ -1,18 +1,13 @@
 import md5 from 'md5';
 import React from 'react';
-import { Direction, MatchingStructureNode } from '../../types';
-import { TournamentBoardProps } from '../TournamentBoard';
-import { GroupLayer } from './layer';
-import { Link } from './line';
-
-export type NodeStatus = {
-  id: string;
-  height: number;
-  leafIds: string[];
-  size: number;
-  treeWeight: number;
-  children?: NodeStatus[];
-};
+import {
+  Direction,
+  MatchingStructureNode,
+  TournamentBoardProps,
+} from '../../types';
+import { GroupLayer } from '../chart/layer';
+import { Link } from '../chart/line';
+import { NodeStatus } from './types';
 
 export const traverseTreeNodeStatus = ({
   node,
