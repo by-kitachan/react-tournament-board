@@ -1,10 +1,34 @@
 import React, { useMemo, useCallback } from 'react';
+import { css } from '@linaria/core';
 import {
   MatchingStructureItem,
   TournamentBoardProps,
   NodeRendererProps,
 } from '../../types';
 import { NodeStatus, TreeLayout } from './types';
+
+const style = {
+  nodeComponentsLayer: css`
+    position: absolute;
+    top: 0;
+    left: 0;
+  `,
+  node: css`
+    position: absolute;
+    display: flex;
+    align-items: center;
+  `,
+  bidiRootNodeContainer: css`
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  `,
+  bidiRootNode: css`
+    pointer-events: auto;
+  `,
+};
 
 export const NodeComponentsLayer = <T extends MatchingStructureItem>({
   treeNodeStatus,
@@ -99,6 +123,7 @@ export const NodeComponentsLayer = <T extends MatchingStructureItem>({
       const colTransposed = transpose ? treeLayout.treeSize - col : col;
       return (
         <div
+          className={style.node}
           style={{
             ...(direction === 'vertical'
               ? {
@@ -113,9 +138,6 @@ export const NodeComponentsLayer = <T extends MatchingStructureItem>({
                   right: -leafDistance / 2,
                   flexDirection: 'column',
                 }),
-            position: 'absolute',
-            display: 'flex',
-            alignItems: 'center',
             transform:
               direction === 'vertical'
                 ? `translate(${boardSize - row}px, ${colTransposed}px)`
@@ -207,7 +229,7 @@ export const NodeComponentsLayer = <T extends MatchingStructureItem>({
       treeNodeStatus[0].size * treeNodeStatus[0].treeWeight +
       Math.max(topLeft - bottomLeft, 0);
     return (
-      <div style={{ position: 'absolute', top: 0, left: 0 }}>
+      <div className={style.nodeComponentsLayer}>
         <NodeRenderer
           nodeStatus={treeNodeStatus[0]}
           nodeProps={propsTree.children![0]}
@@ -223,9 +245,8 @@ export const NodeComponentsLayer = <T extends MatchingStructureItem>({
           transpose
         />
         <div
+          className={style.bidiRootNodeContainer}
           style={{
-            position: 'absolute',
-            // inset: -leafDistance / 2,
             ...(direction === 'vertical'
               ? {
                   top: -leafDistance / 2,
@@ -241,23 +262,19 @@ export const NodeComponentsLayer = <T extends MatchingStructureItem>({
                   right: -leafDistance / 2,
                   flexDirection: 'column',
                 }),
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
             transform:
               direction === 'vertical'
                 ? `translate(${boardSize / 2}px, ${rootCol}px)`
                 : `translate(${rootCol}px, ${boardSize / 2}px)`,
-            pointerEvents: 'none',
           }}
         >
-          <div style={{ pointerEvents: 'auto' }}>{nodeRenderer(propsTree)}</div>
+          <div className={style.bidiRootNode}>{nodeRenderer(propsTree)}</div>
         </div>
       </div>
     );
   } else {
     return (
-      <div style={{ position: 'absolute', top: 0, left: 0 }}>
+      <div className={style.nodeComponentsLayer}>
         <NodeRenderer
           nodeStatus={treeNodeStatus}
           nodeProps={propsTree}

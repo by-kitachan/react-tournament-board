@@ -1,10 +1,17 @@
 import React, { useMemo } from 'react';
+import { css } from '@linaria/core';
 import { MatchingStructureItem, TournamentBoardProps } from '../types';
 import { SVGLayer } from './chart/layer';
 import { traverseTreeNodeStatus } from './TournamentBoard/tree';
 import { NodeComponentsLayer } from './TournamentBoard/NodeComponentsLayer';
 import { TreeLinksLayer } from './TournamentBoard/TreeLinksLayer';
 import { NodeStatus, TreeLayout } from './TournamentBoard/types';
+
+const style = {
+  tournamentBoard: css`
+    position: relative;
+  `,
+};
 
 export const TournamentBoard = <
   T extends MatchingStructureItem = MatchingStructureItem
@@ -73,7 +80,7 @@ export const TournamentBoard = <
   }, [subTreeStatus, treeNodeStatus]);
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div className={style.tournamentBoard}>
       <SVGLayer
         {...(direction === 'vertical'
           ? { width: boardSize, height: treeLayout.treeSize }
