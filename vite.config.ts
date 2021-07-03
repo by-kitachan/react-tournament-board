@@ -7,7 +7,7 @@ export default defineConfig({
   build: {
     lib: {
       entry: './src/index.ts',
-      name: 'bundle',
+      name: 'react-tournament-board',
     },
     rollupOptions: {
       external: [

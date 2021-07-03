@@ -17,5 +17,5 @@
     "emitDeclarationOnly": true,
     "jsx": "preserve"
   },
-  "include": ["./src"]
+  "files": ["./src/index.ts"]
 }

@@ -1,19 +1,20 @@
 {
   "name": "react-tournament-board",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "author": "spring-raining <harusamex.com@gmail.com>",
-  "main": "./dist/bundle.umd.js",
-  "module": "./dist/bundle.es.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/react-tournament-board.umd.js",
+  "module": "./dist/react-tournament-board.es.js",
+  "types": "./dist/react-tournament-board.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/bundle.es.js",
-      "require": "./dist/bundle.umd.js"
+      "import": "./dist/react-tournament-board.es.js",
+      "require": "./dist/react-tournament-board.umd.js"
     }
   },
+  "files": ["dist"],
   "license": "MIT",
   "scripts": {
-    "build": "tsc --emitDeclarationOnly && vite build",
+    "build": "vite build && tsc --emitDeclarationOnly",
     "dev": "vite"
   },
   "dependencies": {
