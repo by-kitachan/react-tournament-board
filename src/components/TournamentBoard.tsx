@@ -18,17 +18,22 @@ export const TournamentBoard = <
   leafDistance = 30,
   groupDistance = 15,
   leafPadding = 30,
-  rootPadding = 30,
+  rootPadding = 80,
   bidirectionalTree = false,
 }: TournamentBoardProps<T>): React.ReactElement<
   TournamentBoardProps<T>
 > | null => {
   const treeNodeStatus = useMemo(
     () =>
-      traverseTreeNodeStatus({ node: competitor, leafDistance, groupDistance }),
+      traverseTreeNodeStatus({
+        node: competitor,
+        leafDistance,
+        groupDistance,
+        depth: 0,
+      }),
     [competitor],
   );
-  let subTreeStatus: [NodeStatus, NodeStatus] | undefined;
+  let subTreeStatus: [NodeStatus<T>, NodeStatus<T>] | undefined;
   if (bidirectionalTree) {
     const [a, b] = treeNodeStatus.children ?? [];
     if (!a || !b || treeNodeStatus.children?.length !== 2) {

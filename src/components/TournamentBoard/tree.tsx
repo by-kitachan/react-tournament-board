@@ -3,32 +3,42 @@ import React from 'react';
 import {
   Direction,
   MatchingStructureNode,
+  MatchingStructureItem,
   TournamentBoardProps,
 } from '../../types';
 import { GroupLayer } from '../chart/layer';
 import { Link } from '../chart/line';
 import { NodeStatus } from './types';
 
-export const traverseTreeNodeStatus = ({
+export const traverseTreeNodeStatus = <T extends MatchingStructureItem>({
   node,
   leafDistance,
   groupDistance,
+  depth,
 }: {
-  node: MatchingStructureNode;
+  node: MatchingStructureNode<T>;
   leafDistance: number;
   groupDistance: number;
-}): NodeStatus => {
+  depth: number;
+}): NodeStatus<T> => {
   if (!Array.isArray(node)) {
     return {
       id: md5(node.id),
       height: 0,
+      depth,
       leafIds: [node.id],
       size: leafDistance,
       treeWeight: 0.5,
+      leafItem: node,
     };
   }
   const children = node.map((node) =>
-    traverseTreeNodeStatus({ node, leafDistance, groupDistance }),
+    traverseTreeNodeStatus({
+      node,
+      leafDistance,
+      groupDistance,
+      depth: depth + 1,
+    }),
   );
   const height = Math.max(...children.map((n) => n.height)) + 1;
   const ss = children.map((n) => n.size);
@@ -41,6 +51,7 @@ export const traverseTreeNodeStatus = ({
   return {
     id: children.reduce((id, n) => md5(`${id}${n.id}`), ''),
     height,
+    depth,
     leafIds: children.reduce<string[]>((arr, n) => [...arr, ...n.leafIds], []),
     size: size + (height === 1 ? groupDistance : 0),
     treeWeight: rootLinkSize / size,
@@ -114,7 +125,9 @@ export const SubTree: React.VFC<
   const descenderLinkLength = linkLength * descenderLinkLengthRatio;
   const ascenderLinkLength = linkLength * ascenderLinkLengthRatio;
   const TreeGroups: React.VFC<
-    { nodeStatus: NodeStatus } & React.SVGProps<SVGGElement>
+    {
+      nodeStatus: NodeStatus<MatchingStructureItem>;
+    } & React.SVGProps<SVGGElement>
   > = ({ nodeStatus: { height, children, size, treeWeight }, ...other }) => {
     if (!children) {
       return null;

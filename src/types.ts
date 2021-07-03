@@ -4,16 +4,30 @@ export type MatchingStructureItem = {
   id: string;
 };
 
-export type MatchingStructureNode<
-  T extends MatchingStructureItem = MatchingStructureItem
-> = T | MatchingStructureNode<T>[];
-export type MatchingStructure<
-  T extends MatchingStructureItem = MatchingStructureItem
-> = MatchingStructureNode<T>[];
+export type MatchingStructureNode<T extends unknown> =
+  | T
+  | MatchingStructureNode<T>[];
+export type MatchingStructure<T extends unknown> = MatchingStructureNode<T>[];
 
 export type NodeRendererProps<
   T extends MatchingStructureItem = MatchingStructureItem
-> = {};
+> = {
+  height: number;
+  depth: number;
+} & (
+  | {
+      isLeaf: false;
+      isRoot: boolean;
+      competitor?: undefined;
+      children: NodeRendererProps<T>[];
+    }
+  | {
+      isLeaf: true;
+      isRoot: false;
+      competitor: T;
+      children?: undefined;
+    }
+);
 
 export interface TournamentBoardProps<
   T extends MatchingStructureItem = MatchingStructureItem

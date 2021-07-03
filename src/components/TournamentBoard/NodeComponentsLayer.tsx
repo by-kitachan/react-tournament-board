@@ -17,7 +17,7 @@ export const NodeComponentsLayer = <T extends MatchingStructureItem>({
   leafPadding,
   rootPadding,
 }: {
-  treeNodeStatus: NodeStatus | [NodeStatus, NodeStatus];
+  treeNodeStatus: NodeStatus<T> | [NodeStatus<T>, NodeStatus<T>];
   treeLayout: TreeLayout;
 } & Pick<
   Required<TournamentBoardProps<T>>,
@@ -29,6 +29,13 @@ export const NodeComponentsLayer = <T extends MatchingStructureItem>({
   | 'leafPadding'
   | 'rootPadding'
 >): React.ReactElement | null => {
+  const rootHeight = useMemo(
+    () =>
+      Array.isArray(treeNodeStatus)
+        ? Math.max(...treeNodeStatus.map((n) => n.height)) + 1
+        : treeNodeStatus.height,
+    [],
+  );
   const stepSize = useMemo(() => {
     if (Array.isArray(treeNodeStatus)) {
       return (
@@ -39,6 +46,42 @@ export const NodeComponentsLayer = <T extends MatchingStructureItem>({
       return (boardSize - rootPadding - leafPadding) / treeNodeStatus.height;
     }
   }, [treeNodeStatus, boardSize, rootPadding, leafPadding]);
+
+  const propsTree = useMemo((): NodeRendererProps<T> => {
+    const traverse = (n: NodeStatus<T>): NodeRendererProps<T> => {
+      const { height, depth } = n;
+      return n.children
+        ? {
+            isLeaf: false,
+            isRoot: false,
+            height,
+            depth,
+            children: n.children.map(traverse),
+          }
+        : {
+            isLeaf: true,
+            isRoot: false,
+            height,
+            depth,
+            competitor: n.leafItem,
+          };
+    };
+    return Array.isArray(treeNodeStatus)
+      ? {
+          isLeaf: false,
+          isRoot: true,
+          height: rootHeight,
+          depth: 0,
+          children: treeNodeStatus.map(traverse),
+        }
+      : {
+          ...(traverse(treeNodeStatus) as NodeRendererProps<T> & {
+            isLeaf: false;
+          }),
+          isRoot: true,
+        };
+  }, [treeNodeStatus, rootHeight]);
+  console.log(propsTree);
 
   const UserComponent = useCallback(
     ({
@@ -88,32 +131,44 @@ export const NodeComponentsLayer = <T extends MatchingStructureItem>({
   );
 
   const NodeRenderer: React.VFC<{
-    nodeStatus: NodeStatus;
+    nodeStatus: NodeStatus<T>;
+    nodeProps: NodeRendererProps<T>;
     colOffset: number;
     rowOffset: number;
     inverse?: boolean;
     transpose?: boolean;
     isRoot?: boolean;
   }> = ({
-    nodeStatus: { children, size, treeWeight },
+    nodeStatus,
+    nodeProps,
     colOffset,
     rowOffset,
     inverse,
     transpose,
     isRoot,
   }) => {
-    const col = colOffset + size * treeWeight;
-    if (!children) {
+    const { size, treeWeight, height, depth } = nodeStatus;
+    const col =
+      colOffset +
+      size * treeWeight +
+      (depth === rootHeight ? groupDistance / 2 : 0);
+    if (!nodeStatus.children) {
       return (
         <UserComponent
-          nodeProps={{}}
-          col={col + groupDistance / 2}
+          nodeProps={{
+            isLeaf: true,
+            isRoot: false,
+            height,
+            depth,
+            competitor: nodeStatus.leafItem,
+          }}
+          col={col}
           row={rowOffset + (inverse ? -leafPadding : leafPadding)}
           {...{ inverse, transpose }}
         />
       );
     }
-
+    const { children } = nodeStatus;
     const nextRowOffset = rowOffset + (inverse ? -stepSize : stepSize);
     const childrenOffset = children.reduce<number[]>(
       (arr, n, i) => [...arr, n.size + (i > 0 ? arr[i - 1] : 0)],
@@ -125,6 +180,7 @@ export const NodeComponentsLayer = <T extends MatchingStructureItem>({
           <NodeRenderer
             key={n.id}
             nodeStatus={n}
+            nodeProps={nodeProps.children![i]}
             colOffset={colOffset + childrenOffset[i] - n.size}
             rowOffset={nextRowOffset}
             {...{ inverse, transpose }}
@@ -132,10 +188,9 @@ export const NodeComponentsLayer = <T extends MatchingStructureItem>({
         ))}
         {!isRoot && (
           <UserComponent
-            nodeProps={{}}
             col={col}
             row={rowOffset}
-            {...{ inverse, transpose }}
+            {...{ nodeProps, inverse, transpose }}
           />
         )}
       </>
@@ -143,7 +198,12 @@ export const NodeComponentsLayer = <T extends MatchingStructureItem>({
   };
 
   if (Array.isArray(treeNodeStatus)) {
-    const { topLeft, bottomLeft } = treeLayout.subTreeSize;
+    const {
+      topLeft,
+      bottomLeft,
+      bottomRight,
+      topRight,
+    } = treeLayout.subTreeSize;
     const rootCol =
       treeNodeStatus[0].size * treeNodeStatus[0].treeWeight +
       Math.max(topLeft - bottomLeft, 0);
@@ -151,15 +211,15 @@ export const NodeComponentsLayer = <T extends MatchingStructureItem>({
       <div style={{ position: 'absolute', top: 0, left: 0 }}>
         <NodeRenderer
           nodeStatus={treeNodeStatus[0]}
+          nodeProps={propsTree.children![0]}
           colOffset={Math.max(topLeft - bottomLeft, 0)}
           rowOffset={(boardSize + rootPadding) / 2}
-          isRoot
         />
         <NodeRenderer
           nodeStatus={treeNodeStatus[1]}
-          colOffset={Math.max(bottomLeft - topLeft, 0)}
+          nodeProps={propsTree.children![1]}
+          colOffset={Math.max(bottomRight - topRight, 0)}
           rowOffset={(boardSize - rootPadding) / 2}
-          isRoot
           inverse
           transpose
         />
@@ -192,7 +252,7 @@ export const NodeComponentsLayer = <T extends MatchingStructureItem>({
             pointerEvents: 'none',
           }}
         >
-          <div style={{ pointerEvents: 'auto' }}>{nodeRenderer({})}</div>
+          <div style={{ pointerEvents: 'auto' }}>{nodeRenderer(propsTree)}</div>
         </div>
       </div>
     );
@@ -201,12 +261,13 @@ export const NodeComponentsLayer = <T extends MatchingStructureItem>({
       <div style={{ position: 'absolute', top: 0, left: 0 }}>
         <NodeRenderer
           nodeStatus={treeNodeStatus}
+          nodeProps={propsTree}
           colOffset={0}
           rowOffset={rootPadding}
           isRoot
         />
         <UserComponent
-          nodeProps={{}}
+          nodeProps={propsTree}
           col={treeNodeStatus.size * treeNodeStatus.treeWeight}
           row={0}
           inverse
