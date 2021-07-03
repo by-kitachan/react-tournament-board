@@ -1,6 +1,6 @@
 {
   "name": "react-tournament-board",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "author": "spring-raining <harusamex.com@gmail.com>",
   "main": "./dist/react-tournament-board.umd.js",
   "module": "./dist/react-tournament-board.es.js",
@@ -30,10 +30,7 @@
     "dev": "vite",
     "prepublish": "npm run build"
   },
-  "dependencies": {
-    "d3-shape": "^3.0.1",
-    "md5": "^2.3.0"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@linaria/babel-preset": "^3.0.0-beta.4",
     "@linaria/core": "^3.0.0-beta.4",
@@ -44,6 +41,8 @@
     "@types/react": "^17.0.11",
     "@types/react-dom": "^17.0.8",
     "@vitejs/plugin-react-refresh": "^1.3.1",
+    "d3-shape": "^3.0.1",
+    "md5": "^2.3.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "typescript": "^4.3.4",
