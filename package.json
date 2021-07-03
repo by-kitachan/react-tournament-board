@@ -1,10 +1,10 @@
 {
   "name": "react-tournament-board",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "spring-raining <harusamex.com@gmail.com>",
   "main": "./dist/react-tournament-board.umd.js",
   "module": "./dist/react-tournament-board.es.js",
-  "types": "./dist/react-tournament-board.d.ts",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/react-tournament-board.es.js",
@@ -15,10 +15,20 @@
   "files": [
     "dist"
   ],
+  "keywords": [
+    "react",
+    "tournament",
+    "bracket",
+    "generator",
+    "svg",
+    "diagram",
+    "tree"
+  ],
   "license": "MIT",
   "scripts": {
     "build": "vite build && tsc --emitDeclarationOnly",
-    "dev": "vite"
+    "dev": "vite",
+    "prepublish": "npm run build"
   },
   "dependencies": {
     "d3-shape": "^3.0.1",
