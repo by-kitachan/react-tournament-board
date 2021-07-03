@@ -11,6 +11,7 @@ export const TournamentBoard = <
 >({
   competitor,
   nodeRenderer,
+  treeLinksLayerProps = {},
   direction = 'horizontal',
   boardSize = 500,
   descenderLinkLengthRatio = 0.7,
@@ -80,6 +81,7 @@ export const TournamentBoard = <
       >
         <TreeLinksLayer
           treeNodeStatus={subTreeStatus || treeNodeStatus}
+          layerProps={treeLinksLayerProps}
           {...{
             treeLayout,
             direction,

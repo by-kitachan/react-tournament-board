@@ -81,7 +81,6 @@ export const NodeComponentsLayer = <T extends MatchingStructureItem>({
           isRoot: true,
         };
   }, [treeNodeStatus, rootHeight]);
-  console.log(propsTree);
 
   const UserComponent = useCallback(
     ({

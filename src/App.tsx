@@ -23,6 +23,11 @@ function App() {
               </div>
             )
           }
+          treeLinksLayerProps={{
+            stroke: 'white',
+            strokeLinejoin: 'round',
+            strokeWidth: 2,
+          }}
           competitor={[
             [
               [[{ id: 'f' }, { id: 'p' }], [{ id: 'z' }]],

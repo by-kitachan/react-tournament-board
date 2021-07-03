@@ -4,10 +4,17 @@ import { GroupLayer } from '../chart/layer';
 import { SubTree } from './tree';
 import { NodeStatus, TreeLayout } from './types';
 
+const defaultLayerProps: React.SVGProps<SVGGElement> = {
+  fill: 'transparent',
+  stroke: 'black',
+  strokeWidth: 1,
+};
+
 export const TreeLinksLayer: React.VFC<
   {
     treeNodeStatus: NodeStatus | [NodeStatus, NodeStatus];
     treeLayout: TreeLayout;
+    layerProps: React.SVGProps<SVGGElement>;
   } & Pick<
     Required<TournamentBoardProps>,
     | 'direction'
@@ -22,6 +29,7 @@ export const TreeLinksLayer: React.VFC<
 > = ({
   treeNodeStatus,
   treeLayout,
+  layerProps,
   direction,
   boardSize,
   descenderLinkLengthRatio,
@@ -34,7 +42,7 @@ export const TreeLinksLayer: React.VFC<
   if (Array.isArray(treeNodeStatus)) {
     const { topLeft, topRight, bottomLeft } = treeLayout.subTreeSize;
     return (
-      <GroupLayer stroke="white" strokeWidth={2} fill="transparent">
+      <GroupLayer {...defaultLayerProps} {...layerProps}>
         <GroupLayer
           transform={
             direction === 'vertical'
@@ -89,7 +97,7 @@ export const TreeLinksLayer: React.VFC<
     );
   } else {
     return (
-      <GroupLayer stroke="white" strokeWidth={2} fill="transparent">
+      <GroupLayer {...defaultLayerProps} {...layerProps}>
         <GroupLayer
           transform={
             direction === 'vertical'
