@@ -20,7 +20,7 @@ yarn add react-tournament-board
 
 ```jsx
 import { TournamentBoard } from 'react-tournament-board';
-import 'react-tournament-board/styles.css'; // import styles
+import 'react-tournament-board/style.css'; // import styles
 
 <TournamentBoard
   competitor={[
