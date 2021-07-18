@@ -84,7 +84,14 @@ export const TournamentBoard = <
   }, [subTreeStatus, treeNodeStatus]);
 
   return (
-    <div className={style.tournamentBoard}>
+    <div
+      className={style.tournamentBoard}
+      style={{
+        ...(direction === 'vertical'
+          ? { width: boardSize, height: treeLayout.treeSize }
+          : { width: treeLayout.treeSize, height: boardSize }),
+      }}
+    >
       <SVGLayer
         {...(direction === 'vertical'
           ? { width: boardSize, height: treeLayout.treeSize }
