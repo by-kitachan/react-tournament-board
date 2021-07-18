@@ -67,6 +67,7 @@ export interface TournamentBoardProps<
     props: MatchingResultRendererProps<U>,
   ) => React.ReactNode;
   treeLinksLayerProps?: React.SVGProps<SVGGElement>;
+  winnerLinksLayerProps?: React.SVGProps<SVGGElement>;
   direction?: Direction;
   boardSize?: number;
   descenderLinkLengthRatio?: number;

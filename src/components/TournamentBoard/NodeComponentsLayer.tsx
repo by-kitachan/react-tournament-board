@@ -38,7 +38,7 @@ export const NodeComponentsLayer = <
 >({
   treeNodeStatus,
   treeLayout,
-  matches,
+  rootMatch,
   nodeRenderer,
   matchingResultRenderer,
   direction,
@@ -51,10 +51,10 @@ export const NodeComponentsLayer = <
 }: {
   treeNodeStatus: NodeStatus<T> | [NodeStatus<T>, NodeStatus<T>];
   treeLayout: TreeLayout;
+  rootMatch?: NodeStatus['match'];
 } & Pick<TournamentBoardProps<T>, 'nodeRenderer' | 'matchingResultRenderer'> &
   Pick<
     Required<TournamentBoardProps<T>>,
-    | 'matches'
     | 'direction'
     | 'boardSize'
     | 'descenderLinkLengthRatio'
@@ -82,22 +82,6 @@ export const NodeComponentsLayer = <
   }, [treeNodeStatus, boardSize, rootPadding, leafPadding]);
 
   const propsTree = useMemo((): NodeRendererProps<T, U> => {
-    const findMatch = ({ children }: { children?: NodeStatus<T>[] }) => {
-      return (
-        children &&
-        matches.find((match) => {
-          const block: number[] = [];
-          return match.result.every(({ id }) => {
-            const index = children.findIndex((node) =>
-              node.leafIds.includes(id),
-            );
-            const found = index >= 0 && !block.includes(index);
-            block.push(index);
-            return found;
-          });
-        })
-      );
-    };
     const traverse = (n: NodeStatus<T>): NodeRendererProps<T, U> => {
       const { height, depth } = n;
       return n.children
@@ -107,7 +91,7 @@ export const NodeComponentsLayer = <
             height,
             depth,
             children: n.children.map(traverse),
-            match: findMatch(n),
+            match: n.match,
           }
         : {
             isLeaf: true,
@@ -124,7 +108,7 @@ export const NodeComponentsLayer = <
           height: rootHeight,
           depth: 0,
           children: treeNodeStatus.map(traverse),
-          match: findMatch({ children: treeNodeStatus }),
+          match: rootMatch,
         }
       : {
           ...(traverse(treeNodeStatus) as NodeRendererProps<T> & {
@@ -132,7 +116,7 @@ export const NodeComponentsLayer = <
           }),
           isRoot: true,
         };
-  }, [treeNodeStatus, rootHeight, matches]);
+  }, [treeNodeStatus, rootHeight, rootMatch]);
 
   const UserComponent = useCallback(
     ({

@@ -1,4 +1,4 @@
-import { MatchingStructureItem } from '../../types';
+import { MatchingStructureItem, MatchingResult } from '../../types';
 
 export type NodeStatus<T = MatchingStructureItem> = {
   id: string;
@@ -11,10 +11,12 @@ export type NodeStatus<T = MatchingStructureItem> = {
   | {
       children: NodeStatus<T>[];
       leafItem?: undefined;
+      match?: MatchingResult;
     }
   | {
       children?: undefined;
       leafItem: T;
+      match?: undefined;
     }
 );
 

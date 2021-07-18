@@ -15,9 +15,9 @@ export const TreeLinksLayer: React.VFC<
     treeNodeStatus: NodeStatus | [NodeStatus, NodeStatus];
     treeLayout: TreeLayout;
     layerProps: React.SVGProps<SVGGElement>;
+    showWinnerLinks?: boolean;
   } & Pick<
     Required<TournamentBoardProps>,
-    | 'matches'
     | 'direction'
     | 'boardSize'
     | 'descenderLinkLengthRatio'
@@ -31,7 +31,7 @@ export const TreeLinksLayer: React.VFC<
   treeNodeStatus,
   treeLayout,
   layerProps,
-  matches,
+  showWinnerLinks = false,
   direction,
   boardSize,
   descenderLinkLengthRatio,
@@ -58,6 +58,7 @@ export const TreeLinksLayer: React.VFC<
             treeNodeStatus={treeNodeStatus[0]}
             treeSize={(boardSize - rootPadding) / 2 - leafPadding}
             {...{
+              showWinnerLinks,
               direction,
               descenderLinkLengthRatio,
               ascenderLinkLengthRatio,
@@ -87,6 +88,7 @@ export const TreeLinksLayer: React.VFC<
             treeNodeStatus={treeNodeStatus[1]}
             treeSize={(boardSize - rootPadding) / 2 - leafPadding}
             {...{
+              showWinnerLinks,
               direction,
               descenderLinkLengthRatio,
               ascenderLinkLengthRatio,
@@ -111,6 +113,7 @@ export const TreeLinksLayer: React.VFC<
             treeNodeStatus={treeNodeStatus}
             treeSize={boardSize - rootPadding - leafPadding}
             {...{
+              showWinnerLinks,
               direction,
               descenderLinkLengthRatio,
               ascenderLinkLengthRatio,

@@ -9,7 +9,6 @@ function App() {
         <p>React tournament board</p>
         <TournamentBoard
           direction="horizontal"
-          bidirectionalTree
           nodeRenderer={(props) =>
             (props.isLeaf || props.children.length > 1) && (
               <div
@@ -42,6 +41,11 @@ function App() {
             stroke: 'white',
             strokeLinejoin: 'round',
             strokeWidth: 2,
+          }}
+          winnerLinksLayerProps={{
+            stroke: 'magenta',
+            strokeLinejoin: 'round',
+            strokeWidth: 4,
           }}
           competitor={[
             [
@@ -86,6 +90,20 @@ function App() {
                 { id: 'e', score: 90 },
               ],
               winnerId: ['b', 'd'],
+            },
+            {
+              result: [
+                { id: 'p', score: 100 },
+                { id: 'z', score: 100 },
+              ],
+              winnerId: 'z',
+            },
+            {
+              result: [
+                { id: 's', score: 2 },
+                { id: 'x', score: 1 },
+              ],
+              winnerId: 's',
             },
           ]}
         />

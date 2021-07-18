@@ -4,19 +4,26 @@ import {
   Direction,
   MatchingStructureNode,
   MatchingStructureItem,
+  MatchingResult,
+  MatchingResultItem,
   TournamentBoardProps,
 } from '../../types';
 import { GroupLayer } from '../chart/layer';
 import { Link } from '../chart/line';
 import { NodeStatus } from './types';
 
-export const traverseTreeNodeStatus = <T extends MatchingStructureItem>({
+export const traverseTreeNodeStatus = <
+  T extends MatchingStructureItem,
+  U extends MatchingResultItem
+>({
   node,
+  matches,
   leafDistance,
   groupDistance,
   depth,
 }: {
   node: MatchingStructureNode<T>;
+  matches: MatchingResult<U>[];
   leafDistance: number;
   groupDistance: number;
   depth: number;
@@ -35,6 +42,7 @@ export const traverseTreeNodeStatus = <T extends MatchingStructureItem>({
   const children = node.map((node) =>
     traverseTreeNodeStatus({
       node,
+      matches,
       leafDistance,
       groupDistance,
       depth: depth + 1,
@@ -48,6 +56,15 @@ export const traverseTreeNodeStatus = <T extends MatchingStructureItem>({
       ss[0] * children[0].treeWeight -
       ss[ss.length - 1] * (1 - children[ss.length - 1].treeWeight)) /
     2;
+  const match = matches.find((match) => {
+    const block: number[] = [];
+    return match.result.every(({ id }) => {
+      const index = children.findIndex((node) => node.leafIds.includes(id));
+      const found = index >= 0 && !block.includes(index);
+      block.push(index);
+      return found;
+    });
+  });
   return {
     id: children.reduce((id, n) => md5(`${id}${n.id}`), ''),
     height,
@@ -56,6 +73,7 @@ export const traverseTreeNodeStatus = <T extends MatchingStructureItem>({
     size: size + (height === 1 ? groupDistance : 0),
     treeWeight: rootLinkSize / size,
     children,
+    match,
   };
 };
 
@@ -102,6 +120,7 @@ export const SubTree: React.VFC<
   {
     treeNodeStatus: NodeStatus;
     treeSize: number;
+    showWinnerLinks: boolean;
   } & Required<
     Pick<
       TournamentBoardProps,
@@ -115,6 +134,7 @@ export const SubTree: React.VFC<
 > = ({
   treeNodeStatus,
   treeSize,
+  showWinnerLinks,
   direction,
   descenderLinkLengthRatio,
   ascenderLinkLengthRatio,
@@ -124,11 +144,17 @@ export const SubTree: React.VFC<
   const linkLength = treeSize / treeNodeStatus.height;
   const descenderLinkLength = linkLength * descenderLinkLengthRatio;
   const ascenderLinkLength = linkLength * ascenderLinkLengthRatio;
+
   const TreeGroups: React.VFC<
     {
       nodeStatus: NodeStatus<MatchingStructureItem>;
+      isWinner?: boolean;
     } & React.SVGProps<SVGGElement>
-  > = ({ nodeStatus: { height, children, size, treeWeight }, ...other }) => {
+  > = ({
+    nodeStatus: { height, children, size, treeWeight, match },
+    isWinner,
+    ...other
+  }) => {
     if (!children) {
       return null;
     }
@@ -137,13 +163,22 @@ export const SubTree: React.VFC<
       [],
     );
     const groupSizeOffset = height === 1 ? groupDistance / 2 : 0;
-    const leavesPos = children.reduce<number[]>(
-      (arr, n, i) => [
-        ...arr,
-        n.size * n.treeWeight + groupSizeOffset + (i > 0 ? accSize[i - 1] : 0),
-      ],
-      [],
-    );
+    const winnerIds = children.flatMap<string>((n) => {
+      return match?.winnerId &&
+        (Array.isArray(match.winnerId)
+          ? match.winnerId.some((id) => n.leafIds.includes(id))
+          : n.leafIds.includes(match.winnerId))
+        ? n.id
+        : [];
+    });
+    const leavesPos = children.flatMap<number>((n, i) => {
+      const pos =
+        n.size * n.treeWeight + groupSizeOffset + (i > 0 ? accSize[i - 1] : 0);
+      if (!showWinnerLinks || (children.length === 1 && isWinner)) {
+        return pos;
+      }
+      return winnerIds.includes(n.id) ? pos : [];
+    });
     const rootPos = size * treeWeight;
     return (
       <GroupLayer {...other}>
@@ -151,6 +186,9 @@ export const SubTree: React.VFC<
           <TreeGroups
             key={n.id}
             nodeStatus={n}
+            isWinner={
+              children.length === 1 ? isWinner : winnerIds.includes(n.id)
+            }
             transform={
               direction === 'vertical'
                 ? `translate(0 ${i > 0 ? accSize[i - 1] : 0})`

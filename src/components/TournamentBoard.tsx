@@ -21,6 +21,7 @@ export const TournamentBoard = <
   nodeRenderer,
   matchingResultRenderer,
   treeLinksLayerProps = {},
+  winnerLinksLayerProps = {},
   direction = 'horizontal',
   boardSize = 500,
   descenderLinkLengthRatio = 0.7,
@@ -37,11 +38,12 @@ export const TournamentBoard = <
     () =>
       traverseTreeNodeStatus({
         node: competitor,
+        matches,
         leafDistance,
         groupDistance,
         depth: 0,
       }),
-    [competitor],
+    [competitor, matches, leafDistance, groupDistance],
   );
   let subTreeStatus: [NodeStatus<T>, NodeStatus<T>] | undefined;
   if (bidirectionalTree) {
@@ -93,7 +95,6 @@ export const TournamentBoard = <
           layerProps={treeLinksLayerProps}
           {...{
             treeLayout,
-            matches,
             direction,
             boardSize,
             descenderLinkLengthRatio,
@@ -104,13 +105,32 @@ export const TournamentBoard = <
             rootPadding,
           }}
         />
+        {matches.length && (
+          <TreeLinksLayer
+            treeNodeStatus={subTreeStatus || treeNodeStatus}
+            layerProps={winnerLinksLayerProps}
+            showWinnerLinks
+            {...{
+              treeLayout,
+              matches,
+              direction,
+              boardSize,
+              descenderLinkLengthRatio,
+              ascenderLinkLengthRatio,
+              leafDistance,
+              groupDistance,
+              leafPadding,
+              rootPadding,
+            }}
+          />
+        )}
       </SVGLayer>
       {(nodeRenderer || matchingResultRenderer) && (
         <NodeComponentsLayer
           treeNodeStatus={subTreeStatus || treeNodeStatus}
+          rootMatch={treeNodeStatus.match}
           {...{
             treeLayout,
-            matches,
             nodeRenderer,
             matchingResultRenderer,
             direction,
