@@ -17,7 +17,9 @@ export const TournamentBoard = <
   T extends MatchingStructureItem = MatchingStructureItem
 >({
   competitor,
+  matches = [],
   nodeRenderer,
+  matchingResultRenderer,
   treeLinksLayerProps = {},
   direction = 'horizontal',
   boardSize = 500,
@@ -91,6 +93,7 @@ export const TournamentBoard = <
           layerProps={treeLinksLayerProps}
           {...{
             treeLayout,
+            matches,
             direction,
             boardSize,
             descenderLinkLengthRatio,
@@ -102,14 +105,17 @@ export const TournamentBoard = <
           }}
         />
       </SVGLayer>
-      {nodeRenderer && (
+      {(nodeRenderer || matchingResultRenderer) && (
         <NodeComponentsLayer
           treeNodeStatus={subTreeStatus || treeNodeStatus}
           {...{
             treeLayout,
+            matches,
             nodeRenderer,
+            matchingResultRenderer,
             direction,
             boardSize,
+            descenderLinkLengthRatio,
             leafDistance,
             groupDistance,
             leafPadding,

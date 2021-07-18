@@ -4,6 +4,8 @@ import {
   MatchingStructureItem,
   TournamentBoardProps,
   NodeRendererProps,
+  MatchingResultItem,
+  MatchingResultRendererProps,
 } from '../../types';
 import { NodeStatus, TreeLayout } from './types';
 
@@ -30,12 +32,18 @@ const style = {
   `,
 };
 
-export const NodeComponentsLayer = <T extends MatchingStructureItem>({
+export const NodeComponentsLayer = <
+  T extends MatchingStructureItem,
+  U extends MatchingResultItem
+>({
   treeNodeStatus,
   treeLayout,
+  matches,
   nodeRenderer,
+  matchingResultRenderer,
   direction,
   boardSize,
+  descenderLinkLengthRatio,
   leafDistance,
   groupDistance,
   leafPadding,
@@ -43,16 +51,18 @@ export const NodeComponentsLayer = <T extends MatchingStructureItem>({
 }: {
   treeNodeStatus: NodeStatus<T> | [NodeStatus<T>, NodeStatus<T>];
   treeLayout: TreeLayout;
-} & Pick<
-  Required<TournamentBoardProps<T>>,
-  | 'nodeRenderer'
-  | 'direction'
-  | 'boardSize'
-  | 'leafDistance'
-  | 'groupDistance'
-  | 'leafPadding'
-  | 'rootPadding'
->): React.ReactElement | null => {
+} & Pick<TournamentBoardProps<T>, 'nodeRenderer' | 'matchingResultRenderer'> &
+  Pick<
+    Required<TournamentBoardProps<T>>,
+    | 'matches'
+    | 'direction'
+    | 'boardSize'
+    | 'descenderLinkLengthRatio'
+    | 'leafDistance'
+    | 'groupDistance'
+    | 'leafPadding'
+    | 'rootPadding'
+  >): React.ReactElement | null => {
   const rootHeight = useMemo(
     () =>
       Array.isArray(treeNodeStatus)
@@ -71,8 +81,24 @@ export const NodeComponentsLayer = <T extends MatchingStructureItem>({
     }
   }, [treeNodeStatus, boardSize, rootPadding, leafPadding]);
 
-  const propsTree = useMemo((): NodeRendererProps<T> => {
-    const traverse = (n: NodeStatus<T>): NodeRendererProps<T> => {
+  const propsTree = useMemo((): NodeRendererProps<T, U> => {
+    const findMatch = ({ children }: { children?: NodeStatus<T>[] }) => {
+      return (
+        children &&
+        matches.find((match) => {
+          const block: number[] = [];
+          return match.result.every(({ id }) => {
+            const index = children.findIndex((node) =>
+              node.leafIds.includes(id),
+            );
+            const found = index >= 0 && !block.includes(index);
+            block.push(index);
+            return found;
+          });
+        })
+      );
+    };
+    const traverse = (n: NodeStatus<T>): NodeRendererProps<T, U> => {
       const { height, depth } = n;
       return n.children
         ? {
@@ -81,6 +107,7 @@ export const NodeComponentsLayer = <T extends MatchingStructureItem>({
             height,
             depth,
             children: n.children.map(traverse),
+            match: findMatch(n),
           }
         : {
             isLeaf: true,
@@ -97,6 +124,7 @@ export const NodeComponentsLayer = <T extends MatchingStructureItem>({
           height: rootHeight,
           depth: 0,
           children: treeNodeStatus.map(traverse),
+          match: findMatch({ children: treeNodeStatus }),
         }
       : {
           ...(traverse(treeNodeStatus) as NodeRendererProps<T> & {
@@ -104,75 +132,116 @@ export const NodeComponentsLayer = <T extends MatchingStructureItem>({
           }),
           isRoot: true,
         };
-  }, [treeNodeStatus, rootHeight]);
+  }, [treeNodeStatus, rootHeight, matches]);
 
   const UserComponent = useCallback(
     ({
       nodeProps,
+      matchResultProps,
       row,
       col,
+      matchingResultRow,
       inverse,
       transpose,
     }: {
       nodeProps: NodeRendererProps<T>;
+      matchResultProps?: MatchingResultRendererProps<U>;
       row: number;
       col: number;
+      matchingResultRow?: number;
       inverse?: boolean;
       transpose?: boolean;
     }) => {
+      if (!nodeRenderer && !matchingResultRenderer) {
+        return null;
+      }
+      const posStyle: React.CSSProperties =
+        direction === 'vertical'
+          ? {
+              ...(inverse ? { right: 0 } : { left: 0 }),
+              top: -leafDistance / 2,
+              bottom: -leafDistance / 2,
+              flexDirection: 'row',
+            }
+          : {
+              ...(inverse ? { top: 0 } : { bottom: 0 }),
+              left: -leafDistance / 2,
+              right: -leafDistance / 2,
+              flexDirection: 'column',
+            };
       const colTransposed = transpose ? treeLayout.treeSize - col : col;
       return (
-        <div
-          className={style.node}
-          style={{
-            ...(direction === 'vertical'
-              ? {
-                  ...(inverse ? { right: 0 } : { left: 0 }),
-                  top: -leafDistance / 2,
-                  bottom: -leafDistance / 2,
-                  flexDirection: 'row',
-                }
-              : {
-                  ...(inverse ? { top: 0 } : { bottom: 0 }),
-                  left: -leafDistance / 2,
-                  right: -leafDistance / 2,
-                  flexDirection: 'column',
-                }),
-            transform:
-              direction === 'vertical'
-                ? `translate(${boardSize - row}px, ${colTransposed}px)`
-                : `translate(${colTransposed}px, ${row}px)`,
-          }}
-        >
-          {nodeRenderer(nodeProps)}
-        </div>
+        <>
+          <div
+            className={style.node}
+            style={{
+              ...posStyle,
+              transform:
+                direction === 'vertical'
+                  ? `translate(${boardSize - row}px, ${colTransposed}px)`
+                  : `translate(${colTransposed}px, ${row}px)`,
+            }}
+          >
+            {nodeRenderer && nodeRenderer(nodeProps)}
+          </div>
+          {matchingResultRenderer && matchResultProps && (
+            <div
+              className={style.node}
+              style={{
+                ...posStyle,
+                transform:
+                  direction === 'vertical'
+                    ? `translate(${
+                        boardSize - (matchingResultRow ?? row)
+                      }px, ${colTransposed}px)`
+                    : `translate(${colTransposed}px, ${matchingResultRow}px)`,
+              }}
+            >
+              {matchingResultRenderer(matchResultProps)}
+            </div>
+          )}
+        </>
       );
     },
-    [nodeRenderer, leafDistance, direction, boardSize, treeLayout],
+    [
+      nodeRenderer,
+      matchingResultRenderer,
+      leafDistance,
+      direction,
+      boardSize,
+      treeLayout,
+    ],
   );
 
   const NodeRenderer: React.VFC<{
     nodeStatus: NodeStatus<T>;
     nodeProps: NodeRendererProps<T>;
+    matchResultProps?: MatchingResultRendererProps<U>;
     colOffset: number;
     rowOffset: number;
     inverse?: boolean;
     transpose?: boolean;
     isRoot?: boolean;
+    isSubRoot?: boolean;
   }> = ({
     nodeStatus,
     nodeProps,
+    matchResultProps,
     colOffset,
     rowOffset,
     inverse,
     transpose,
     isRoot,
+    isSubRoot,
   }) => {
     const { size, treeWeight, height, depth } = nodeStatus;
     const col =
       colOffset +
       size * treeWeight +
       (depth === rootHeight ? groupDistance / 2 : 0);
+    const matchingResultRow = isSubRoot
+      ? rowOffset + (rootPadding / 4) * (inverse ? 1 : -1)
+      : rowOffset + stepSize * descenderLinkLengthRatio * (inverse ? 1 : -1);
     if (!nodeStatus.children) {
       return (
         <UserComponent
@@ -185,10 +254,11 @@ export const NodeComponentsLayer = <T extends MatchingStructureItem>({
           }}
           col={col}
           row={rowOffset + (inverse ? -leafPadding : leafPadding)}
-          {...{ inverse, transpose }}
+          {...{ matchResultProps, matchingResultRow, inverse, transpose }}
         />
       );
     }
+    // const match = findMatch(nodeStatus);
     const { children } = nodeStatus;
     const nextRowOffset = rowOffset + (inverse ? -stepSize : stepSize);
     const childrenOffset = children.reduce<number[]>(
@@ -197,21 +267,42 @@ export const NodeComponentsLayer = <T extends MatchingStructureItem>({
     );
     return (
       <>
-        {children.map((n, i) => (
-          <NodeRenderer
-            key={n.id}
-            nodeStatus={n}
-            nodeProps={nodeProps.children![i]}
-            colOffset={colOffset + childrenOffset[i] - n.size}
-            rowOffset={nextRowOffset}
-            {...{ inverse, transpose }}
-          />
-        ))}
+        {children.map((n, i) => {
+          const matchResult = nodeProps.match?.result.find(({ id }) =>
+            n.leafIds.includes(id),
+          );
+          const matchResultProps = matchResult && {
+            result: matchResult,
+            isWinner: !nodeProps.match?.winnerId
+              ? false
+              : Array.isArray(nodeProps.match.winnerId)
+              ? nodeProps.match.winnerId.some((id) => n.leafIds.includes(id))
+              : n.leafIds.includes(nodeProps.match.winnerId),
+            height: nodeProps.height,
+            depth: nodeProps.depth,
+          };
+          return (
+            <NodeRenderer
+              key={n.id}
+              nodeStatus={n}
+              nodeProps={nodeProps.children![i]}
+              colOffset={colOffset + childrenOffset[i] - n.size}
+              rowOffset={nextRowOffset}
+              {...{ matchResultProps, inverse, transpose }}
+            />
+          );
+        })}
         {!isRoot && (
           <UserComponent
             col={col}
             row={rowOffset}
-            {...{ nodeProps, inverse, transpose }}
+            {...{
+              nodeProps,
+              matchResultProps,
+              matchingResultRow,
+              inverse,
+              transpose,
+            }}
           />
         )}
       </>
@@ -228,19 +319,39 @@ export const NodeComponentsLayer = <T extends MatchingStructureItem>({
     const rootCol =
       treeNodeStatus[0].size * treeNodeStatus[0].treeWeight +
       Math.max(topLeft - bottomLeft, 0);
+    // const match = findMatch({ children: treeNodeStatus });
+    const matchResultProps = treeNodeStatus.map(
+      ({ leafIds }) =>
+        propsTree.match && {
+          result: propsTree.match.result.find(({ id }) =>
+            leafIds.includes(id),
+          )!,
+          isWinner: !propsTree.match.winnerId
+            ? false
+            : Array.isArray(propsTree.match.winnerId)
+            ? propsTree.match.winnerId.some((id) => leafIds.includes(id))
+            : leafIds.includes(propsTree.match.winnerId),
+          height: propsTree.height,
+          depth: propsTree.depth,
+        },
+    );
     return (
       <div className={style.nodeComponentsLayer}>
         <NodeRenderer
           nodeStatus={treeNodeStatus[0]}
           nodeProps={propsTree.children![0]}
+          matchResultProps={matchResultProps[0]}
           colOffset={Math.max(topLeft - bottomLeft, 0)}
           rowOffset={(boardSize + rootPadding) / 2}
+          isSubRoot
         />
         <NodeRenderer
           nodeStatus={treeNodeStatus[1]}
           nodeProps={propsTree.children![1]}
+          matchResultProps={matchResultProps[1]}
           colOffset={Math.max(bottomRight - topRight, 0)}
           rowOffset={(boardSize - rootPadding) / 2}
+          isSubRoot
           inverse
           transpose
         />
@@ -268,7 +379,9 @@ export const NodeComponentsLayer = <T extends MatchingStructureItem>({
                 : `translate(${rootCol}px, ${boardSize / 2}px)`,
           }}
         >
-          <div className={style.bidiRootNode}>{nodeRenderer(propsTree)}</div>
+          {nodeRenderer && (
+            <div className={style.bidiRootNode}>{nodeRenderer(propsTree)}</div>
+          )}
         </div>
       </div>
     );

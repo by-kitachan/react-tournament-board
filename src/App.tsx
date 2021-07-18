@@ -19,10 +19,25 @@ function App() {
                   height: 20,
                 }}
               >
+                {props.match && props.match.winnerId}
                 {props.isLeaf && props.competitor.id}
               </div>
             )
           }
+          matchingResultRenderer={(props) => (
+            <div
+              style={{
+                backgroundColor: props.isWinner ? 'red' : 'white',
+                width: 10,
+                height: 10,
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              {props.result.score}
+            </div>
+          )}
           treeLinksLayerProps={{
             stroke: 'white',
             strokeLinejoin: 'round',
@@ -40,6 +55,38 @@ function App() {
               [[{ id: 'y' }, { id: 't' }, { id: 'u' }]],
               [{ id: 's' }, [{ id: 'a' }, { id: 'x' }]],
             ],
+          ]}
+          matches={[
+            {
+              result: [
+                { id: 'o', score: 120 },
+                { id: 'q', score: 140 },
+              ],
+              winnerId: 'q',
+            },
+            {
+              result: [
+                { id: 'x', score: 200 },
+                { id: 'u', score: 150 },
+              ],
+              winnerId: ['x'],
+            },
+            {
+              result: [
+                { id: 'x', score: 100 },
+                { id: 'z', score: 100 },
+              ],
+              winnerId: 'x',
+            },
+            {
+              result: [
+                { id: 'b', score: 150 },
+                { id: 'c', score: 120 },
+                { id: 'd', score: 150 },
+                { id: 'e', score: 90 },
+              ],
+              winnerId: ['b', 'd'],
+            },
           ]}
         />
       </header>

@@ -17,6 +17,7 @@ export const TreeLinksLayer: React.VFC<
     layerProps: React.SVGProps<SVGGElement>;
   } & Pick<
     Required<TournamentBoardProps>,
+    | 'matches'
     | 'direction'
     | 'boardSize'
     | 'descenderLinkLengthRatio'
@@ -30,6 +31,7 @@ export const TreeLinksLayer: React.VFC<
   treeNodeStatus,
   treeLayout,
   layerProps,
+  matches,
   direction,
   boardSize,
   descenderLinkLengthRatio,
