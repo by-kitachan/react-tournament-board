@@ -1,4 +1,3 @@
-import { match } from 'assert';
 import React from 'react';
 import { TournamentBoard } from '../../src/components/TournamentBoard';
 import { competitors } from './data';
