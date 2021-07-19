@@ -1,6 +1,6 @@
 {
   "name": "react-tournament-board",
-  "version": "0.1.2",
+  "version": "1.0.0",
   "author": "spring-raining <harusamex.com@gmail.com>",
   "main": "./dist/react-tournament-board.umd.js",
   "module": "./dist/react-tournament-board.es.js",
