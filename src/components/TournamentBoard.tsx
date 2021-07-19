@@ -140,6 +140,7 @@ export const TournamentBoard = <
             treeLayout,
             nodeRenderer,
             matchingResultRenderer,
+            matches,
             direction,
             boardSize,
             descenderLinkLengthRatio,

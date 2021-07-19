@@ -21,7 +21,7 @@ const Baseball: React.VFC = () => (
       matches={matches}
       direction="vertical"
       bidirectionalTree
-      leafDistance={24}
+      leafDistance={26}
       groupDistance={0}
       leafPadding={100}
       rootPadding={60}

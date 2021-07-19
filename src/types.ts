@@ -37,6 +37,7 @@ export type NodeRendererProps<
       competitor?: undefined;
       children: NodeRendererProps<T>[];
       match?: MatchingResult<U>;
+      allMatches?: undefined;
     }
   | {
       isLeaf: true;
@@ -44,6 +45,7 @@ export type NodeRendererProps<
       competitor: T;
       children?: undefined;
       match?: undefined;
+      allMatches: MatchingResult<U>[];
     }
 );
 

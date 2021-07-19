@@ -20,11 +20,11 @@ const Basketball: React.VFC = () => (
       competitor={competitors}
       matches={matches}
       direction="vertical"
-      leafDistance={29}
-      groupDistance={15}
+      leafDistance={32}
+      groupDistance={8}
       leafPadding={0}
       rootPadding={50}
-      boardSize={1000}
+      boardSize={800}
       ascenderLinkLengthRatio={0.8}
       descenderLinkLengthRatio={0.2}
       nodeRenderer={(props) =>
@@ -32,9 +32,9 @@ const Basketball: React.VFC = () => (
           <div
             style={{
               position: 'relative',
-              width: 180,
-              padding: '4px 6px',
-              fontSize: 14,
+              width: 160,
+              padding: '0 6px',
+              fontSize: 16,
               backgroundColor: 'white',
               display: 'flex',
               justifyContent: 'space-between',
@@ -50,9 +50,9 @@ const Basketball: React.VFC = () => (
           style={{
             position: 'relative',
             left: -50,
-            width: 180,
-            padding: '2px 6px',
-            fontSize: 14,
+            width: 160,
+            padding: '0 6px',
+            fontSize: 16,
             backgroundColor: 'white',
             display: 'flex',
             justifyContent: 'space-between',

@@ -11,7 +11,7 @@ const Shogi: React.VFC = () => (
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      background: '#e0b887',
+      background: '#ddbaa2',
       color: 'black',
     }}
   >
@@ -29,10 +29,14 @@ const Shogi: React.VFC = () => (
           <div
             style={{
               height: 120,
-              padding: '4px',
+              padding: '8px 4px',
               fontSize: 15,
               textAlign: 'start',
-              background: '#f7e1c4',
+              background: props.allMatches.some(
+                (match) => match.winnerId === props.competitor.id,
+              )
+                ? '#f7d370'
+                : '#aaa',
               borderRadius: 4,
               writingMode: 'vertical-lr',
             }}

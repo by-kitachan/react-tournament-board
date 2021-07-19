@@ -4,6 +4,7 @@ import './App.css';
 import Basketball from '../examples/Basketball';
 import Baseball from '../examples/Baseball';
 import Shogi from '../examples/Shogi';
+import SmashBros from '../examples/SmashBros';
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
       <Basketball />
       <Baseball />
       <Shogi />
+      <SmashBros />
     </div>
   );
 }

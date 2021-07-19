@@ -41,6 +41,7 @@ export const NodeComponentsLayer = <
   rootMatch,
   nodeRenderer,
   matchingResultRenderer,
+  matches,
   direction,
   boardSize,
   descenderLinkLengthRatio,
@@ -55,6 +56,7 @@ export const NodeComponentsLayer = <
 } & Pick<TournamentBoardProps<T>, 'nodeRenderer' | 'matchingResultRenderer'> &
   Pick<
     Required<TournamentBoardProps<T>>,
+    | 'matches'
     | 'direction'
     | 'boardSize'
     | 'descenderLinkLengthRatio'
@@ -99,6 +101,9 @@ export const NodeComponentsLayer = <
             height,
             depth,
             competitor: n.leafItem,
+            allMatches: matches.filter(({ result }) =>
+              result.some(({ id }) => id === n.leafItem.id),
+            ),
           };
     };
     return Array.isArray(treeNodeStatus)
@@ -116,7 +121,7 @@ export const NodeComponentsLayer = <
           }),
           isRoot: true,
         };
-  }, [treeNodeStatus, rootHeight, rootMatch]);
+  }, [treeNodeStatus, rootHeight, rootMatch, matches]);
 
   const UserComponent = useCallback(
     ({
@@ -218,7 +223,7 @@ export const NodeComponentsLayer = <
     isRoot,
     isSubRoot,
   }) => {
-    const { size, treeWeight, height, depth } = nodeStatus;
+    const { size, treeWeight, depth } = nodeStatus;
     const col =
       colOffset +
       size * treeWeight +
@@ -229,20 +234,18 @@ export const NodeComponentsLayer = <
     if (!nodeStatus.children) {
       return (
         <UserComponent
-          nodeProps={{
-            isLeaf: true,
-            isRoot: false,
-            height,
-            depth,
-            competitor: nodeStatus.leafItem,
-          }}
           col={col}
           row={rowOffset + (inverse ? -leafPadding : leafPadding)}
-          {...{ matchResultProps, matchingResultRow, inverse, transpose }}
+          {...{
+            nodeProps,
+            matchResultProps,
+            matchingResultRow,
+            inverse,
+            transpose,
+          }}
         />
       );
     }
-    // const match = findMatch(nodeStatus);
     const { children } = nodeStatus;
     const nextRowOffset = rowOffset + (inverse ? -stepSize : stepSize);
     const childrenOffset = children.reduce<number[]>(
@@ -303,7 +306,6 @@ export const NodeComponentsLayer = <
     const rootCol =
       treeNodeStatus[0].size * treeNodeStatus[0].treeWeight +
       Math.max(topLeft - bottomLeft, 0);
-    // const match = findMatch({ children: treeNodeStatus });
     const matchResultProps = treeNodeStatus.map(
       ({ leafIds }) =>
         propsTree.match && {
