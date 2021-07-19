@@ -27,6 +27,7 @@
   "license": "MIT",
   "scripts": {
     "build": "vite build && tsc --emitDeclarationOnly",
+    "build:docs": "vite build -c vite.docs.config.ts",
     "dev": "vite",
     "prepublish": "npm run build"
   },
