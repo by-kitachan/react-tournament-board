@@ -33,13 +33,55 @@ import 'react-tournament-board/style.css'; // import styles
     ],
     [{ id: 'g' }, [{ id: 'h' }, { id: 'i' }]],
   ]}
+  matches={[
+    {
+      result: [{ id: 'b' }, { id: 'c' }, { id: 'd' }],
+      winnerId: 'b',
+    },
+    {
+      result: [{ id: 'e' }, { id: 'f' }],
+      winnerId: 'f',
+    },
+    {
+      result: [{ id: 'b' }, { id: 'f' }],
+      winnerId: 'b',
+    },
+  ]}
   nodeRenderer={(props) => <div>{props.isLeaf && props.competitor.id}</div>}
   treeLinksLayerProps={{
     stroke: 'silver',
     strokeWidth: 2,
   }}
+  winnerLinksLayerProps={{
+    stroke: 'magenta',
+    strokeWidth: 4,
+  }}
   direction="horizontal"
 />
+```
+
+### Props of `<TournamentBoard />`
+
+```ts
+export interface TournamentBoardProps {
+  competitor: MatchingStructure<T>;
+  matches?: MatchingResult<U>[];
+  nodeRenderer?: (props: NodeRendererProps) => React.ReactNode;
+  matchingResultRenderer?: (
+    props: MatchingResultRendererProps,
+  ) => React.ReactNode;
+  treeLinksLayerProps?: React.SVGProps<SVGGElement>;
+  winnerLinksLayerProps?: React.SVGProps<SVGGElement>;
+  direction?: 'vertical' | 'horizontal';
+  boardSize?: number;
+  descenderLinkLengthRatio?: number;
+  ascenderLinkLengthRatio?: number;
+  leafDistance?: number;
+  groupDistance?: number;
+  leafPadding?: number;
+  rootPadding?: number;
+  bidirectionalTree?: boolean;
+}
 ```
 
 <!-- ROADMAP -->
