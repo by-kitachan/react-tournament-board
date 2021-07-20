@@ -15,44 +15,46 @@ const Shogi: React.VFC = () => (
     }}
   >
     <h2>Shogi</h2>
-    <TournamentBoard
-      competitor={competitors}
-      matches={matches}
-      direction="horizontal"
-      leafPadding={120}
-      rootPadding={0}
-      leafDistance={50}
-      groupDistance={0}
-      nodeRenderer={(props) =>
-        props.isLeaf && (
-          <div
-            style={{
-              height: 120,
-              padding: '8px 4px',
-              fontSize: 15,
-              textAlign: 'start',
-              background: props.allMatches.some(
-                (match) => match.winnerId === props.competitor.id,
-              )
-                ? '#f7d370'
-                : '#aaa',
-              borderRadius: 4,
-              writingMode: 'vertical-lr',
-            }}
-          >
-            {props.competitor?.name}
-          </div>
-        )
-      }
-      treeLinksLayerProps={{
-        strokeWidth: 2,
-        stroke: '#555',
-      }}
-      winnerLinksLayerProps={{
-        strokeWidth: 5,
-        stroke: '#ca2009',
-      }}
-    />
+    <div style={{ maxWidth: '100%', overflowX: 'auto' }}>
+      <TournamentBoard
+        competitor={competitors}
+        matches={matches}
+        direction="horizontal"
+        leafPadding={120}
+        rootPadding={0}
+        leafDistance={50}
+        groupDistance={0}
+        nodeRenderer={(props) =>
+          props.isLeaf && (
+            <div
+              style={{
+                height: 120,
+                padding: '8px 4px',
+                fontSize: 15,
+                textAlign: 'start',
+                background: props.allMatches.some(
+                  (match) => match.winnerId === props.competitor.id,
+                )
+                  ? '#f7d370'
+                  : '#aaa',
+                borderRadius: 4,
+                writingMode: 'vertical-lr',
+              }}
+            >
+              {props.competitor?.name}
+            </div>
+          )
+        }
+        treeLinksLayerProps={{
+          strokeWidth: 2,
+          stroke: '#555',
+        }}
+        winnerLinksLayerProps={{
+          strokeWidth: 5,
+          stroke: '#ca2009',
+        }}
+      />
+    </div>
   </div>
 );
 export default Shogi;

@@ -15,63 +15,65 @@ const Basketball: React.VFC = () => (
     }}
   >
     <h2>Basketball</h2>
-    <TournamentBoard
-      competitor={competitors}
-      matches={matches}
-      direction="vertical"
-      leafDistance={32}
-      groupDistance={8}
-      leafPadding={0}
-      rootPadding={50}
-      boardSize={800}
-      ascenderLinkLengthRatio={0.8}
-      descenderLinkLengthRatio={0.2}
-      nodeRenderer={(props) =>
-        props.isRoot && (
+    <div style={{ maxWidth: '100%', overflowX: 'auto' }}>
+      <TournamentBoard
+        competitor={competitors}
+        matches={matches}
+        direction="vertical"
+        leafDistance={32}
+        groupDistance={8}
+        leafPadding={0}
+        rootPadding={50}
+        boardSize={800}
+        ascenderLinkLengthRatio={0.8}
+        descenderLinkLengthRatio={0.2}
+        nodeRenderer={(props) =>
+          props.isRoot && (
+            <div
+              style={{
+                position: 'relative',
+                width: 160,
+                padding: '0 6px',
+                fontSize: 16,
+                backgroundColor: 'white',
+                display: 'flex',
+                justifyContent: 'space-between',
+                border: '4px solid #17408b',
+              }}
+            >
+              <span>{teamNames[props.match.winnerId as string]}</span>
+            </div>
+          )
+        }
+        matchingResultRenderer={(props) => (
           <div
             style={{
               position: 'relative',
+              left: -38,
               width: 160,
               padding: '0 6px',
               fontSize: 16,
               backgroundColor: 'white',
               display: 'flex',
               justifyContent: 'space-between',
-              border: '4px solid #17408b',
+              border: '4px solid',
+              borderColor: props.isWinner ? '#17408b' : '#ccc',
             }}
           >
-            <span>{teamNames[props.match.winnerId as string]}</span>
+            <span>{teamNames[props.result.id]}</span>
+            <span style={{}}>{props.result.wins}</span>
           </div>
-        )
-      }
-      matchingResultRenderer={(props) => (
-        <div
-          style={{
-            position: 'relative',
-            left: -50,
-            width: 160,
-            padding: '0 6px',
-            fontSize: 16,
-            backgroundColor: 'white',
-            display: 'flex',
-            justifyContent: 'space-between',
-            border: '4px solid',
-            borderColor: props.isWinner ? '#17408b' : '#ccc',
-          }}
-        >
-          <span>{teamNames[props.result.id]}</span>
-          <span style={{}}>{props.result.wins}</span>
-        </div>
-      )}
-      treeLinksLayerProps={{
-        strokeWidth: 5,
-        stroke: '#ccc',
-      }}
-      winnerLinksLayerProps={{
-        strokeWidth: 5,
-        stroke: '#17408b',
-      }}
-    />
+        )}
+        treeLinksLayerProps={{
+          strokeWidth: 5,
+          stroke: '#ccc',
+        }}
+        winnerLinksLayerProps={{
+          strokeWidth: 5,
+          stroke: '#17408b',
+        }}
+      />
+    </div>
   </div>
 );
 export default Basketball;

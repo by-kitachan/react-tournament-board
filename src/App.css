@@ -1,38 +1,25 @@
 h1 {
-  font-size: 500%;
+  font-size: 300%;
 }
 
 h2 {
-  font-size: 300%;
+  font-size: 200%;
 }
 
 .App {
   text-align: center;
+  font-size: 1.6rem;
 }
 
-.App h1 {
-  line-height: 40vmin;
+header {
+  min-height: 40vmin;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-button {
-  font-size: calc(10px + 2vmin);
+.tournament-container {
+  max-width: 100%;
+  overflow-x: auto;
 }
