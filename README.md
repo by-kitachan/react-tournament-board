@@ -3,7 +3,7 @@
 [![npm][version-shield]][version-url]
 [![MIT License][license-shield]][license-url]
 
-[![React tournament board](https://repository-images.githubusercontent.com/378298545/9b654faa-9471-45f5-a5bc-4f4a03eeefc3)](https://spring-raining.github.io/react-tournament-board/)
+[![React tournament board](https://repository-images.githubusercontent.com/378298545/9b654faa-9471-45f5-a5bc-4f4a03eeefc3)](https://by-kitachan.github.io/react-tournament-board/)
 
 ## Installation
 
@@ -87,7 +87,7 @@ export interface TournamentBoardProps {
 <!-- ROADMAP -->
 ## Roadmap
 
-See the [open issues](https://github.com/spring-raining/react-tournament-baord/issues) for a list of proposed features (and known issues).
+See the [open issues](https://github.com/by-kitachan/react-tournament-baord/issues) for a list of proposed features (and known issues).
 
 ## Contributing
 
@@ -111,7 +111,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 © spring-raining - https://github.com/spring-raining - harusamex.com@gmail.com
 
-Project Link: https://github.com/spring-raining/react-tournament-baord
+Project Link: https://github.com/by-kitachan/react-tournament-baord
 
 
 
@@ -120,5 +120,5 @@ Project Link: https://github.com/spring-raining/react-tournament-baord
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 [version-shield]: https://img.shields.io/npm/v/react-tournament-board.svg?style=flat-square
 [version-url]: https://www.npmjs.com/package/react-tournament-board
-[license-shield]: https://img.shields.io/github/license/spring-raining/react-tournament-board.svg?style=flat-square
-[license-url]: https://github.com/spring-raining/react-tournament-board/blob/main/LICENSE.txt
+[license-shield]: https://img.shields.io/github/license/by-kitachan/react-tournament-board.svg?style=flat-square
+[license-url]: https://github.com/by-kitachan/react-tournament-board/blob/main/LICENSE.txt
